@@ -9,7 +9,8 @@ var client = new Twitter({
 var re = /#[a-zA-Z0-9_]+/g;
 
 exports.handler = (event, context, callback) => {
-  client.get('search/tweets', {q: JSON.parse(event.body).hashtag, 'count': 100}, function(error, tweets, response) {
+  hashtag = JSON.parse(event.body).hashtag;
+  client.get('search/tweets', {'q': hashtag, 'count': 100}, function(error, tweets, response) {
 
     var tweetTags = tweets.statuses.map(function(item){
       return item.text.match(re);
@@ -23,11 +24,15 @@ exports.handler = (event, context, callback) => {
           result[item.toLowerCase()] = 0;
         }
         result[item.toLowerCase()] += 1;
+      });
     });
-    });
+    delete result[hashtag.toLowerCase()];
 
     var output = {"statusCode": 200,
-    "headers": {"Content-Type": "application/json"},
+    "headers": {
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "*",
+    },
     "body": JSON.stringify(result)};
     callback(null, output);
     });
